@@ -76,7 +76,7 @@ const ProductDetails = () => {
 
   
   useEffect(() => {
-    fetch(`http://localhost:3000/bids/${productId}`)
+    fetch(`http://localhost:3000/products/bids/${productId}`)
      .then(res => res.json())
      .then(data => setBids(data))
   }, [productId]);
@@ -228,6 +228,9 @@ const ProductDetails = () => {
           </div>
         </dialog>
       </MyContainer>
+
+
+
       <MyContainer>
         <h1 className="text-3xl font-bold text-accent"> Bids For This Products: <span className="bg-linear-to-r from-blue-500 to-red-500 bg-clip-text text-transparent">{bids.length<10 && 0}{bids.length}</span></h1>
         <div className="overflow-x-auto">

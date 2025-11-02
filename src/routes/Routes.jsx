@@ -7,6 +7,7 @@ import Loading from "../components/Loading";
 import ProductDetails from "../pages/productDetails/ProductDetails";
 import AuthLayout from "../layout/AuthLayout";
 import Register from "../pages/register/Register";
+import MyBids from "../pages/myBids/MyBids";
 
 const router = createBrowserRouter([
     {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
                 loader: ({params}) => fetch(`http://localhost:3000/products/${params.id}`),
                 hydrateFallbackElement: <Loading></Loading>
             },
+            {
+                path: "my-bids",
+                Component: MyBids,
+            }
         ]
     },
     {
