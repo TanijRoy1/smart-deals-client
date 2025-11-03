@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useLoaderData } from "react-router";
 import MyContainer from "../../components/MyContainer";
 import Swal from "sweetalert2";
+import { IoMdArrowRoundBack } from "react-icons/io";
 
 const ProductDetails = () => {
   const [bids, setBids] = useState([]);
@@ -39,7 +40,7 @@ const ProductDetails = () => {
     const newBid = {
       product: productId,
       buyer_image:
-        "https://i.ibb.co.com/nM21ZtW9/brian-jones-Rfv5u-Z0ym3-Y-unsplash.jpg",
+        "https://i.ibb.co.com/LdY05dfY/Screenshot-2022-09-30-14-12-01-310-com-mxtech-videoplayer-ad-01.jpg",
       buyer_name: name,
       buyer_contact: contact,
       buyer_email: email,
@@ -60,7 +61,7 @@ const ProductDetails = () => {
         if (data.insertedId) {
           bidModalRef.current.close();
           Swal.fire({
-            position: "middle",
+            position: "center",
             icon: "success",
             title: "Your bid has been saved",
             showConfirmButton: false,
@@ -109,7 +110,8 @@ const ProductDetails = () => {
           </div>
         </div>
         <div className="flex-1">
-          <Link to={`/all-products`} className="cursor-pointer">
+          <Link to={`/all-products`} className="cursor-pointer flex items-center gap-2">
+           <IoMdArrowRoundBack />
             Back To Products
           </Link>
           <h1 className="text-3xl font-bold text-accent my-2">{title}</h1>

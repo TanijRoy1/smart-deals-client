@@ -8,6 +8,8 @@ import ProductDetails from "../pages/productDetails/ProductDetails";
 import AuthLayout from "../layout/AuthLayout";
 import Register from "../pages/register/Register";
 import MyBids from "../pages/myBids/MyBids";
+import MyProducts from "../pages/my-products/MyProducts";
+import CreateProduct from "../pages/create-product/CreateProduct";
 
 const router = createBrowserRouter([
     {
@@ -25,7 +27,7 @@ const router = createBrowserRouter([
                 hydrateFallbackElement: <Loading></Loading>
             },
             {
-                path: "all-products/:id",
+                path: "product-details/:id",
                 Component: ProductDetails,
                 loader: ({params}) => fetch(`http://localhost:3000/products/${params.id}`),
                 hydrateFallbackElement: <Loading></Loading>
@@ -33,6 +35,14 @@ const router = createBrowserRouter([
             {
                 path: "my-bids",
                 Component: MyBids,
+            },
+            {
+                path: "my-products",
+                Component: MyProducts,
+            },
+            {
+                path: "create-product",
+                Component: CreateProduct
             }
         ]
     },
