@@ -128,12 +128,14 @@ useEffect(()=> {
 const verifyFirebaseToken = (req, res, next) => {
   console.log("in the verify middleware", req.headers.authorization);
   if(!req.headers.authorization){
+    // ask chatgpt : give me http status code
     return res.status(401).send({message : "unauthorized access"});
   }
   const token = req.headers.authorization.split(" ")[1];
   if(!token){
     return res.status(401).send({message : "unauthorized access"});
   }
+  // then verify token
 
   next();
 }
@@ -149,7 +151,160 @@ app.get("/bids", verifyFirebaseToken, async (req, res) => {
   const result = await cursor.toArray();
   res.send(result);
 })
+```
+3. in firebase
+- go to project settings > service accounts
+- npm i firebase-admin
+- copy the code and paste it in server side
+- click "Generate new private key"
+- cut the downloader json file and paste in the server side and keep it in .gitignore
+- go to documentation > ID Token verification
+- verify token
+```js
+const verifyFirebaseToken = async (req, res, next) => {
+  
+  // then verify token
+  try {
+    const userInfo = await admin.auth().verifyIdToken(token);
+    // console.log("after token validation", userInfo);
+    req.token_email = userInfo.email;
+    next();
+  } 
+  catch {
+    return res.status(401).send({message : "unauthorized access"});
+  }
+}
 
+// in get by email
+app.get("/bids", verifyFirebaseToken, async (req, res) => {
+  console.log(req.token_email);
+  if(email){
+    if(email !== req.token_email){
+      return res.status(403).send({message : "forbiden access"});
+    }
+    query.buyer_email = email;
+  }
+})
+```
+4. verify productDetails page in same way
+5. go to jwt.io
+ - Libraries > click nodejs> view repo
+ - npm install jsonwebtoken
+ ```js
+  const jwt = require("jsonwebtoken")
+
+ // jwt related apis
+ app.post("/getToken", (req, res) => {
+  const token = jwt.sign({email : "abc"}, process.env.JWT_SECRET, {expiresIn: "1h"});
+  res.send({token : token});
+ })
+ ```
+ - create JWT_SECRET in terminal --- 1. node , 2. require('crypto').randomBytes(64).toString('hex')
+6. post jwt token from client side
+```js
+useEffect(()=>{
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+      if(currentUser){
+        const loggedUser = {email : currentUser.email};
+
+        fetch("http://localhost:3000/getToken", {
+          method: "POST",
+          headers: {
+            "content-Type" : "application/json"
+          },
+          body: JSON.stringify(loggedUser)
+        })
+          .then(res => res.json())
+          .then(data => {
+            console.log("after getting token", data);
+            localStorage.setItem("token", data.token);
+          })
+      } else {
+        localStorage.removeItem("token");
+      }
+    })
+    return () => unsubscribe();
+  },[])
+```
+```js
+// jwt related apis
+ app.post("/getToken", (req, res) => {
+  const loggedUser = req.body;
+  const token = jwt.sign(loggedUser, process.env.JWT_SECRET, {expiresIn: "1h"});
+  res.send({token : token});
+ })
+```
+7. store token in client side and send to server side
+```js
+.then(data => {
+  console.log("after getting token", data);
+  localStorage.setItem("token", data.token);
+})
+
+// send token from local storage
+useEffect(()=> {
+  if(user?email){
+    fetch(`http:localhost:3000/bids?email=${user.email}`, {
+      headers : {
+        authorization : `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+  }
+},[user])
+```
+8. create verifyJWTToken middleware
+```js
+const verifyJWTToken = (req, res, next) => {
+  console.log("in the verify middleware", req.headers.authorization);
+  if(!req.headers.authorization){
+    return res.status(401).send({message : "unauthorized access"});
+  }
+  const token = req.headers.authorization.split(" ")[1];
+  if(!token){
+    return res.status(401).send({message : "unauthorized access"});
+  }
+  // then verify jwt token
+
+  next();
+}
+
+// get by email
+app.get("/bids", verifyJWTToken, async (req, res) => {
+  
+})
+```
+9. go to JWT repo to verify JWT token
+```js
+// verify jwt token
+jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+  if(err){
+    return res.status(401).send({message : "unauthorized access"});
+  }
+
+  console.log("after decoded", decoded);
+  req.token_email = decoded.email;
+  next();
+})
+
+// in get by email
+app.get("/bids", verifyJWTToken, async (req, res) => {
+  console.log(req.token_email);
+  if(email){
+    query.buyer_email = email;
+  }
+  if(email !== req.token_email){
+    return res.status(403).send({message : "forbiden access"});
+  }
+})
+```
+
+10. ask chatgpt : 
+```js
+I have a react firebase authentication. In server side I am using express and mongodb(no mongose) 
+
+I want to implement jwt token verification with http only cookie. Give me step by step process
 ```
 
 

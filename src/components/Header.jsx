@@ -70,7 +70,7 @@ const Header = () => {
         <div className="navbar-end">
           {
             user ? <div className="flex items-center gap-2">
-              <img src={user.photoURL} className="w-11 h-11 rounded-full border-orange-500 border-2" alt="" />
+              <img src={user?.photoURL} className="w-11 h-11 rounded-full border-orange-500 border-2" alt="" />
               <button onClick={handleSignOutUser} className="btn btn-primary">SignOut</button>
             </div>
             :
