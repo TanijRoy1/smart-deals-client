@@ -1,20 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import MyContainer from "../../components/MyContainer";
 import Swal from "sweetalert2";
 import Loading from "../../components/Loading";
+import AuthContext from "../../contexts/AuthContext";
 
 const MyProducts = () => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {user, loading} = useContext(AuthContext);
   useEffect(() => {
-    setLoading(true);
-    fetch("http://localhost:3000/my-products?sellerEmail=tanijroy@roy.com")
+    if(loading) return ;
+    fetch(`http://localhost:3000/my-products?sellerEmail=${user?.email}`, {
+      headers: {
+        authorization : `Bearer ${user?.accessToken}`
+      }
+    })
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);
-        setLoading(false);
       });
-  }, []);
+  }, [user, loading]);
 
   const handleDeleteProduct = (id) => {
     Swal.fire({

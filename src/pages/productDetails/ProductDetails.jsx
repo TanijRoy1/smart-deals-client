@@ -1,11 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLoaderData } from "react-router";
 import MyContainer from "../../components/MyContainer";
 import Swal from "sweetalert2";
 import { IoMdArrowRoundBack } from "react-icons/io";
+import AuthContext from "../../contexts/AuthContext";
 
 const ProductDetails = () => {
   const [bids, setBids] = useState([]);
+  const {user} = useContext(AuthContext);
   const {
     _id: productId,
     title,
@@ -190,6 +192,7 @@ const ProductDetails = () => {
                     <input
                       type="text"
                       name="name"
+                      defaultValue={user?.displayName}
                       className="input"
                       placeholder="Name"
                     />
@@ -199,6 +202,7 @@ const ProductDetails = () => {
                     <input
                       type="email"
                       name="email"
+                      defaultValue={user?.email}
                       className="input"
                       placeholder="Email"
                     />

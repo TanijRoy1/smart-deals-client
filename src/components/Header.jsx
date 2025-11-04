@@ -4,32 +4,42 @@ import MyContainer from "./MyContainer";
 import AuthContext from "../contexts/AuthContext";
 
 const Header = () => {
-  const {user, setUser, signOutUser} = useContext(AuthContext);
+  const { user, setUser, signOutUser } = useContext(AuthContext);
 
   const handleSignOutUser = () => {
     signOutUser()
-     .then(() => {
-      setUser(null);
-     })
-     .catch(err => console.log(err))
-  }
+      .then(() => {
+        setUser(null);
+      })
+      .catch((err) => console.log(err));
+  };
 
   const links = (
     <>
       <li>
-        <NavLink to="/" className="myNavLink">Home</NavLink>
+        <NavLink to="/" className="myNavLink">
+          Home
+        </NavLink>
       </li>
       <li>
-        <NavLink to="/all-products" className="myNavLink">All Products</NavLink>
+        <NavLink to="/all-products" className="myNavLink">
+          All Products
+        </NavLink>
       </li>
       <li>
-        <NavLink to="/my-products" className="myNavLink">My Products</NavLink>
+        <NavLink to="/my-products" className="myNavLink">
+          My Products
+        </NavLink>
       </li>
       <li>
-        <NavLink to="/my-bids" className="myNavLink">My Bids</NavLink>
+        <NavLink to="/my-bids" className="myNavLink">
+          My Bids
+        </NavLink>
       </li>
       <li>
-        <NavLink to="/create-product" className="myNavLink">Create Product</NavLink>
+        <NavLink to="/create-product" className="myNavLink">
+          Create Product
+        </NavLink>
       </li>
     </>
   );
@@ -62,23 +72,41 @@ const Header = () => {
               {links}
             </ul>
           </div>
-          <a className="text-3xl font-black text-[#001931]">Smart<span className="bg-clip-text text-transparent bg-linear-to-r from-[#632EE3] to-[#9F62F2]">Deals</span></a>
+          <a className="text-3xl font-black text-[#001931]">
+            Smart
+            <span className="bg-clip-text text-transparent bg-linear-to-r from-[#632EE3] to-[#9F62F2]">
+              Deals
+            </span>
+          </a>
         </div>
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal px-1">{links}</ul>
         </div>
         <div className="navbar-end">
-          {
-            user ? <div className="flex items-center gap-2">
-              <img src={user?.photoURL} className="w-11 h-11 rounded-full border-orange-500 border-2" alt="" />
-              <button onClick={handleSignOutUser} className="btn btn-primary">SignOut</button>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <img
+                src={user?.photoURL}
+                className="w-11 h-11 rounded-full border-orange-500 border-2"
+                alt=""
+              />
+              <button onClick={handleSignOutUser} className="btn btn-primary">
+                SignOut
+              </button>
             </div>
-            :
-          <div className="flex items-center gap-2">
-            <Link to={`/auth/login`} className="btn btn-outline border-blue-500 hover:bg-blue-500 hover:text-white text-blue-500 transition-all duration-300">Login</Link>
-          <Link to={`/auth/register`} className="btn btn-primary">Register</Link>
-          </div>
-          }
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to={`/auth/login`}
+                className="btn btn-outline border-blue-500 hover:bg-blue-500 hover:text-white text-blue-500 transition-all duration-300"
+              >
+                Login
+              </Link>
+              <Link to={`/auth/register`} className="btn btn-primary">
+                Register
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </MyContainer>

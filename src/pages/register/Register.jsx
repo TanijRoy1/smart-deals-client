@@ -4,7 +4,6 @@ import AuthContext from "../../contexts/AuthContext";
 
 const Register = () => {
   const {signUpUser, updateUser, setUser} = useContext(AuthContext);
-
   const navigate = useNavigate();
 
   const handleSignUpUser = (e) => {
