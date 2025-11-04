@@ -1,3 +1,291 @@
+# 🧩 M54 – MongoDB and Basic CRUD Setup Guide
+This guide walks through setting up a simple CRUD (Create, Read, Update, Delete) application using Express.js and MongoDB (Atlas or Local).
+
+## ⚙️ 1. Server Setup
+### Create and initialize the project
+```js
+mkdir simple-crud-server
+cd simple-crud-server
+npm init -y
+code .
+```
+
+### Install dependencies
+```js
+npm i express cors mongodb
+```
+### Configure package.json
+
+Update the scripts section:
+```js
+"scripts": {
+  "start": "node index.js"
+}
+```
+### Create index.js
+```js
+const express = require("express");
+const cors = require("cors");
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Root route
+app.get("/", (req, res) => {
+  res.send("Simple CRUD server is running.");
+});
+
+// Start server
+app.listen(port, () => {
+  console.log(`Server running on port: ${port}`);
+});
+```
+### Start the server
+```js
+nodemon index.js
+```
+## ☁️ 2. MongoDB Atlas Setup
+
+1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+ and create an account.
+
+2. Security → Database Access → Add New Database User
+
+ - Username: simpleDBUser
+
+ - Generate a secure password and save it.
+
+ - Role: Atlas Admin
+
+3. Security → Network Access → Add IP Address
+
+ - Allow access from anywhere (0.0.0.0/0).
+
+4. Database → Cluster → Connect → Drivers
+
+ - Copy the connection URI.
+
+ - Replace <db_password> with your actual password.
+
+Example URI:
+```js
+const uri = "mongodb+srv://simpleDBUser:<password>@cluster0.mongodb.net/?retryWrites=true&w=majority";
+```
+
+## 🧠 3. Connect MongoDB to Express
+```js
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
+async function run() {
+  try {
+    await client.connect();
+    await client.db("admin").command({ ping: 1 });
+    console.log("✅ Pinged your deployment. Yor are successfully connected to MongoDB!");
+  } finally {
+    // Optionally close the client when needed
+  }
+}
+
+run().catch(console.dir);
+```
+
+## 🧩 4. CRUD Operations
+### Database & Collection
+```js
+const usersDB = client.db("usersDB");
+const usersCollection = usersDB.collection("users");
+```
+
+### ➕ Create (POST)
+
+Server-side:
+```js
+app.post("/users", async (req, res) => {
+  const newUser = req.body;
+  const result = await usersCollection.insertOne(newUser);
+  res.send(result);
+});
+```
+
+Client-side:
+```js
+fetch("http://localhost:3000/bids", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify(newBid),
+})
+  .then(res => res.json())
+  .then(data => {
+    if (data.insertedId) {
+      alert("User added successfully!");
+      newBid._id = data.insertedId;
+      const newBids = [...bids, newBid];
+      const sortedBids = newBids.sort((a, b) => b.bid_price - a.bid_price);
+      setBids(sortedBids);
+    }
+  });
+```
+### 📥 Read (GET)
+
+Get All Users:
+```js
+app.get("/users", async (req, res) => {
+  const cursor = usersCollection.find();
+  const result = await cursor.toArray();
+  res.send(result);
+});
+```
+
+Get One User by ID:
+```js
+app.get("/users/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await usersCollection.findOne(query);
+  res.send(result);
+});
+```
+
+Client Example:
+```js
+fetch("http://localhost:3000/users")
+  .then(res => res.json())
+  .then(data => console.log(data));
+```
+### 🗑️ Delete (DELETE)
+
+Server-side:
+```js
+app.delete("/users/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await usersCollection.deleteOne(query);
+  res.send(result);
+});
+```
+
+Client-side:
+```js
+const handleDeleteUser = (id) => {
+  fetch(`http://localhost:3000/users/${id}`, { method: "DELETE" })
+    .then(res => res.json())
+    .then(data => {
+      if (data.deletedCount) {
+        alert("Deleted successfully!");
+        setUsers(users.filter(user => user._id !== id));
+      }
+    });
+};
+```
+### ✏️ Update (PATCH)
+
+Server-side:
+```js
+app.patch("/users/:id", async (req, res) => {
+  const id = req.params.id;
+  const updatedUser = req.body;
+  const query = { _id: new ObjectId(id) };
+  const update = {
+    $set: {
+      name: updatedUser.name,
+      email: updatedUser.email,
+    },
+  };
+  const result = await usersCollection.updateOne(query, update);
+  res.send(result);
+});
+```
+
+Client-side:
+```js
+const handleUpdateUser = (e) => {
+  e.preventDefault();
+  const updatedUser = {
+    name: e.target.name.value,
+    email: e.target.email.value,
+  };
+
+  fetch(`http://localhost:3000/users/${user._id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(updatedUser),
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.modifiedCount) {
+        alert("User info updated!");
+      }
+    });
+};
+```
+
+## 🧰 5. Local MongoDB (Optional)
+
+If you want to use MongoDB locally:
+
+1. Install MongoDB Community Server.
+
+2. Open MongoDB Compass.
+
+3. Click “+ Add New Connection”.
+
+4. Use local URI:
+```js
+mongodb://localhost:27017
+```
+
+5. Comment out the Atlas URI and replace with the local one.
+
+## 🧩 6. Notes & Concepts
+
+### 1. PATCH vs PUT
+
+ - PATCH updates specific fields.
+
+ - PUT replaces the entire document.
+
+### 2. Upsert
+
+ - Adds a new document if it doesn’t exist during an update operation.
+
+### 3. `defaultValue` vs `value` in React
+```js
+<input name="email" defaultValue={user.email} />  // Uncontrolled
+<input name="email" value={user.email} />         // Controlled
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # React + Vite
 
 16. create smart-deals-client
