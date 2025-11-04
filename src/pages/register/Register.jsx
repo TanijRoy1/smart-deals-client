@@ -1,7 +1,50 @@
-import React from "react";
-import { Link } from "react-router";
+import React, { useContext } from "react";
+import { Link, useNavigate } from "react-router";
+import AuthContext from "../../contexts/AuthContext";
 
 const Register = () => {
+  const {signUpUser, updateUser, setUser} = useContext(AuthContext);
+
+  const navigate = useNavigate();
+
+  const handleSignUpUser = (e) => {
+    e.preventDefault();
+    const name = e.target.name.value;
+    const photoUrl = e.target.photoUrl.value;
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
+    signUpUser(email, password)
+      const regExp = /^(?=.*[a-z])(?=.*[A-Z])[A-Za-z\d@$!%?&#^()\-_=+]{6,}$/;
+    if (!regExp.test(password)) {
+      alert(
+        "Password must be at least 6 characters long and include at least one uppercase and one lowercase letter"
+      );
+      return;
+    }
+
+    signUpUser(email, password)
+      .then((result) => {
+        const currentUser = result.user;
+
+        updateUser({ displayName: name, photoURL: photoUrl })
+          .then(() => {
+            setUser({ ...currentUser, displayName: name, photoURL: photoUrl });
+          })
+          .catch((e) => {
+            console.log(e);
+            setUser(currentUser);
+          });
+
+        e.target.reset();
+        alert("Account created successfully.");
+        navigate("/");
+      })
+      .catch(err => {
+        console.log(err);
+      })
+  }
+
   return (
     <div className="bg-linear-to-br  from-orange-500 to-red-500 py-10 px-4 flex items-center justify-center min-h-screen">
       <div className="card backdrop-blur-md bg-white/20 border border-white/30 w-full max-w-sm shrink-0 shadow-2xl">
@@ -9,18 +52,20 @@ const Register = () => {
           <h1 className="text-center text-2xl font-bold mb-1">
             Create Account
           </h1>
-          <fieldset className="fieldset">
+          <form onSubmit={handleSignUpUser}>
+            <fieldset className="fieldset">
             <label className="label">Name</label>
-            <input type="text" className="input" placeholder="Name" />
+            <input type="text" name="name" className="input" placeholder="Name" />
             <label className="label">Photo URL</label>
-            <input type="text" className="input" placeholder="Photo URL" />
+            <input type="text" name="photoUrl" className="input" placeholder="Photo URL" />
             <label className="label">Email</label>
-            <input type="email" className="input" placeholder="Email" />
+            <input type="email" name="email" className="input" placeholder="Email" />
             <label className="label">Password</label>
-            <input type="password" className="input" placeholder="Password" />
+            <input type="password" name="password" className="input" placeholder="Password" />
 
             <button className="btn btn-primary mt-4">Register</button>
           </fieldset>
+          </form>
           <p>
             Already have an Account?{" "}
             <Link

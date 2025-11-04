@@ -1,22 +1,52 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router";
+import AuthContext from "../../contexts/AuthContext";
 
 const Login = () => {
+  const {signInUser, signInGoogle} = useContext(AuthContext);
+
+  const handleSignInUser = (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
+    signInUser(email, password)
+      .then(result => {
+        console.log(result.user);
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+  const handleSignInGoogle = () => {
+    signInGoogle()
+      .then(result => {
+       console.log(result.user);
+      })
+      .catch(err => {
+       console.log(err);
+      })
+  }
+
+
+
   return (
     <div className="bg-linear-to-br  from-orange-500 to-orange-300 py-10 px-4 flex items-center justify-center min-h-screen">
       <div className="card backdrop-blur-md bg-white/20 border border-white/30 w-full max-w-sm shrink-0 shadow-2xl">
         <div className="card-body">
           <h1 className="text-center text-2xl font-bold mb-1">Log In</h1>
-          <fieldset className="fieldset">
+          <form onSubmit={handleSignInUser}>
+            <fieldset className="fieldset">
             <label className="label">Email</label>
-            <input type="email" className="input" placeholder="Email" />
+            <input type="email" name="email" className="input" placeholder="Email" />
             <label className="label">Password</label>
-            <input type="password" className="input" placeholder="Password" />
+            <input type="password" name="password" className="input" placeholder="Password" />
             <div>
               <a className="link link-hover">Forgot password?</a>
             </div>
             <button className="btn btn-primary mt-4">Login</button>
           </fieldset>
+          </form>
           <p>
             Don't have an Account?{" "}
             <Link
@@ -32,7 +62,7 @@ const Login = () => {
             <div className="bg-white/30 h-0.5 w-full rounded-full"></div>
           </div>
           {/* Google */}
-          <button className="btn bg-white text-black border-[#e5e5e5]">
+          <button onClick={handleSignInGoogle} className="btn bg-white text-black border-[#e5e5e5]">
             <svg
               aria-label="Google logo"
               width="16"

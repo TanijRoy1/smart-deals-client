@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link, NavLink } from "react-router";
 import MyContainer from "./MyContainer";
+import AuthContext from "../contexts/AuthContext";
 
 const Header = () => {
+  const {user, setUser, signOutUser} = useContext(AuthContext);
+
+  const handleSignOutUser = () => {
+    signOutUser()
+     .then(() => {
+      setUser(null);
+     })
+     .catch(err => console.log(err))
+  }
+
   const links = (
     <>
       <li>
@@ -57,10 +68,17 @@ const Header = () => {
           <ul className="menu menu-horizontal px-1">{links}</ul>
         </div>
         <div className="navbar-end">
+          {
+            user ? <div className="flex items-center gap-2">
+              <img src={user.photoURL} className="w-11 h-11 rounded-full border-orange-500 border-2" alt="" />
+              <button onClick={handleSignOutUser} className="btn btn-primary">SignOut</button>
+            </div>
+            :
           <div className="flex items-center gap-2">
             <Link to={`/auth/login`} className="btn btn-outline border-blue-500 hover:bg-blue-500 hover:text-white text-blue-500 transition-all duration-300">Login</Link>
-          <a className="btn btn-primary">Register</a>
+          <Link to={`/auth/register`} className="btn btn-primary">Register</Link>
           </div>
+          }
         </div>
       </div>
     </MyContainer>

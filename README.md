@@ -55,7 +55,7 @@ app.post("/users", async (req, res) => {
 20. button in index.css
 ```js
 .btn-primary{
-  @apply bg-gradient-to-r from-[#34434] to-[4434jk]
+  @apply bg-linear-to-r from-[#34434] to-[4434jk]
 }
 .btn-primary:hover{
   @apply opacity-90
@@ -96,8 +96,61 @@ const handleBidModalOpen = () => {
   readOnly
 />
 ```
-24. 
+24. .env file in server side
+```js
+// 1.
+npm install dotenv
+// 2.
+require("dotenv").config();
+// 3.
+const uri =
+  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.z1gnsog.mongodb.net/?appName=Cluster0`;
+```
 
+
+# M57 - JWT & Firebase Admin SDK, Verification, Save User Data
+
+1. send accessToken from client side to server side
+```js
+useEffect(()=> {
+  if(user?email){
+    fetch(`http:localhost:3000/bids?email=${user.email}`, {
+      headers : {
+        authorization : `Bearer ${user.accessToken}`
+      }
+    })
+  }
+},[user])
+```
+2. get accessToken in server side
+```js
+// middleware
+const verifyFirebaseToken = (req, res, next) => {
+  console.log("in the verify middleware", req.headers.authorization);
+  if(!req.headers.authorization){
+    return res.status(401).send({message : "unauthorized access"});
+  }
+  const token = req.headers.authorization.split(" ")[1];
+  if(!token){
+    return res.status(401).send({message : "unauthorized access"});
+  }
+
+  next();
+}
+
+// get by email
+app.get("/bids", verifyFirebaseToken, async (req, res) => {
+  const email = req.query.email;
+  const query = {};
+  if(email){
+    query.buyer_email = email;
+  }
+  const cursor = bidsCollection.find(query);
+  const result = await cursor.toArray();
+  res.send(result);
+})
+
+```
 
 
 
