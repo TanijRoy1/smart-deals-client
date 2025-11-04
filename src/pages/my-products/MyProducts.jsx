@@ -3,6 +3,7 @@ import MyContainer from "../../components/MyContainer";
 import Swal from "sweetalert2";
 import Loading from "../../components/Loading";
 import AuthContext from "../../contexts/AuthContext";
+import { Link } from "react-router";
 
 const MyProducts = () => {
   const [products, setProducts] = useState([]);
@@ -109,9 +110,9 @@ const MyProducts = () => {
                     </span>
                   </td>
                   <td className="flex gap-1.5">
-                    <button className="border px-2 py-0.5 rounded-lg border-blue-600 text-blue-600 cursor-pointer">
+                    <Link to={`/update-product/${product._id}`} className="border px-2 py-0.5 rounded-lg border-blue-600 text-blue-600 cursor-pointer">
                       Edit
-                    </button>
+                    </Link>
                     <button
                       onClick={() => handleDeleteProduct(product._id)}
                       className="border px-2 py-0.5 rounded-lg border-orange-600 text-orange-600 cursor-pointer"

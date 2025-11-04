@@ -7,7 +7,7 @@ import AuthContext from "../../contexts/AuthContext";
 
 const ProductDetails = () => {
   const [bids, setBids] = useState([]);
-  const {user} = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const {
     _id: productId,
     title,
@@ -71,17 +71,16 @@ const ProductDetails = () => {
           });
           newBid._id = data.insertedId;
           const newBids = [...bids, newBid];
-          const sortedBids = newBids.sort((a,b)=> b.bid_price - a.bid_price);
+          const sortedBids = newBids.sort((a, b) => b.bid_price - a.bid_price);
           setBids(sortedBids);
         }
       });
   };
 
-  
   useEffect(() => {
     fetch(`http://localhost:3000/products/bids/${productId}`)
-     .then(res => res.json())
-     .then(data => setBids(data))
+      .then((res) => res.json())
+      .then((data) => setBids(data));
   }, [productId]);
 
   return (
@@ -112,10 +111,21 @@ const ProductDetails = () => {
           </div>
         </div>
         <div className="flex-1">
-          <Link to={`/all-products`} className="cursor-pointer flex items-center gap-2">
-           <IoMdArrowRoundBack />
-            Back To Products
-          </Link>
+          <div className="flex justify-between">
+            <Link
+              to={`/all-products`}
+              className="cursor-pointer flex items-center gap-2"
+            >
+              <IoMdArrowRoundBack />
+              Back To Products
+            </Link>
+            <Link
+              to={`/update-product/${productId}`}
+              className="border px-2 py-0.5 rounded-lg border-blue-600 text-blue-600 cursor-pointer"
+            >
+              Edit
+            </Link>
+          </div>
           <h1 className="text-3xl font-bold text-accent my-2">{title}</h1>
           <div className="bg-green-100 text-green-500 inline px-2 py-1">
             {category}
@@ -235,19 +245,22 @@ const ProductDetails = () => {
         </dialog>
       </MyContainer>
 
-
-
       <MyContainer>
-        <h1 className="text-3xl font-bold text-accent"> Bids For This Products: <span className="bg-linear-to-r from-blue-500 to-red-500 bg-clip-text text-transparent">{bids.length<10 && 0}{bids.length}</span></h1>
+        <h1 className="text-3xl font-bold text-accent">
+          {" "}
+          Bids For This Products:{" "}
+          <span className="bg-linear-to-r from-blue-500 to-red-500 bg-clip-text text-transparent">
+            {bids.length < 10 && 0}
+            {bids.length}
+          </span>
+        </h1>
         <div className="overflow-x-auto">
           <table className="table">
             {/* head */}
             <thead>
               <tr>
                 <th>
-                  <label>
-                    SL No
-                  </label>
+                  <label>SL No</label>
                 </th>
                 <th>Product</th>
                 <th>Seller</th>
@@ -257,55 +270,58 @@ const ProductDetails = () => {
             </thead>
             <tbody>
               {/* row 1 */}
-              {
-                bids.map((bid, index) => <tr key={bid._id}>
-                <th>
-                  <label>
-                    {index + 1}
-                  </label>
-                </th>
-                <td>
-                  <div className="flex items-center gap-3">
-                    <div className="avatar">
-                      <div className="mask mask-squircle h-12 w-12">
-                        <img
-                          src={image}
-                          alt="Avatar Tailwind CSS Component"
-                        />
+              {bids.map((bid, index) => (
+                <tr key={bid._id}>
+                  <th>
+                    <label>{index + 1}</label>
+                  </th>
+                  <td>
+                    <div className="flex items-center gap-3">
+                      <div className="avatar">
+                        <div className="mask mask-squircle h-12 w-12">
+                          <img
+                            src={image}
+                            alt="Avatar Tailwind CSS Component"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-bold">{title}</div>
+                        <div className="text-sm opacity-50">
+                          ৳ {price_min} - {price_max}
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <div className="font-bold">{title}</div>
-                      <div className="text-sm opacity-50">৳ {price_min} - {price_max}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div className="flex items-center gap-3">
-                    <div className="avatar">
-                      <div className="mask mask-squircle rounded-full h-12 w-12">
-                        <img
-                          src={bid.buyer_image}
-                          alt="Avatar Tailwind CSS Component"
-                        />
+                  </td>
+                  <td>
+                    <div className="flex items-center gap-3">
+                      <div className="avatar">
+                        <div className="mask mask-squircle rounded-full h-12 w-12">
+                          <img
+                            src={bid.buyer_image}
+                            alt="Avatar Tailwind CSS Component"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-bold">{bid.buyer_name}</div>
+                        <div className="text-sm opacity-50">
+                          {bid.buyer_email}
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <div className="font-bold">{bid.buyer_name}</div>
-                      <div className="text-sm opacity-50">{bid.buyer_email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  ৳ {bid.bid_price}
-                </td>
-                <td>
-                   <span className="text-green-500 border border-green-500 rounded-2xl px-2 py-1 text-xs font-semibold mr-2">Accept Offer</span>
-                   <span className="text-orange-500 border border-orange-500 rounded-2xl px-2 py-1 text-xs font-semibold">Reject Offer</span>
-                </td>
-                
-              </tr>)
-              }
+                  </td>
+                  <td>৳ {bid.bid_price}</td>
+                  <td>
+                    <span className="text-green-500 border border-green-500 rounded-2xl px-2 py-1 text-xs font-semibold mr-2">
+                      Accept Offer
+                    </span>
+                    <span className="text-orange-500 border border-orange-500 rounded-2xl px-2 py-1 text-xs font-semibold">
+                      Reject Offer
+                    </span>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
