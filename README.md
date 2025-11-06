@@ -120,7 +120,7 @@ app.post("/users", async (req, res) => {
 
 Client-side:
 ```js
-fetch("https://smart-deals-api-server-gamma.vercel.app/bids", {
+fetch("http://localhost:3000/bids", {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify(newBid),
@@ -159,7 +159,7 @@ app.get("/users/:id", async (req, res) => {
 
 Client Example:
 ```js
-fetch("https://smart-deals-api-server-gamma.vercel.app/users")
+fetch("http://localhost:3000/users")
   .then(res => res.json())
   .then(data => console.log(data));
 ```
@@ -178,7 +178,7 @@ app.delete("/users/:id", async (req, res) => {
 Client-side:
 ```js
 const handleDeleteUser = (id) => {
-  fetch(`https://smart-deals-api-server-gamma.vercel.app/users/${id}`, { method: "DELETE" })
+  fetch(`http://localhost:3000/users/${id}`, { method: "DELETE" })
     .then(res => res.json())
     .then(data => {
       if (data.deletedCount) {
@@ -216,7 +216,7 @@ const handleUpdateUser = (e) => {
     email: e.target.email.value,
   };
 
-  fetch(`https://smart-deals-api-server-gamma.vercel.app/users/${user._id}`, {
+  fetch(`http://localhost:3000/users/${user._id}`, {
     method: "PATCH",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(updatedUser),
@@ -285,310 +285,405 @@ mongodb://localhost:27017
 
 
 
+# 🧠 M55 - CRUD with Smart Deals using MongoDB
 
-# React + Vite
+This guide documents the steps for setting up Smart Deals, a full-stack MERN project implementing CRUD operations with MongoDB, Express, Firebase, and React.
+.
 
-16. create smart-deals-client
-17. ask chatgpt: 
+## 🚀 Server Setup
+### 1. Clone Resources and Initialize Server
 ```js
-what do you think when should I use component folder structure for a react application or when should I use pages or feature wise folder structure
+git clone <smart-deals-resources-repo>
+mkdir smart-deals-server
+cd smart-deals-server
+npm init -y
 ```
-18. create a firebase project
-19. save user data on database
+### 2. Install Dependencies
+```js
+npm install express cors mongodb dotenv
+```
+### 3. Test API with Thunder Client
+- Install Thunder Client extension in VS Code.
+- Click New Request and test your API routes.
+
+## 🗄️ MongoDB Setup
+### 4. Connect to MongoDB Atlas
+
+#### 1. Go to MongoDB Atlas.
+#### 2. Create a new cluster.
+#### 3. Navigate to:
+   - Database Access → Add New Database User
+   - Username: smartDBUser
+   - Password: yourSecurePassword
+#### 4. Allow network access for all IPs (0.0.0.0/0).
+#### 5. Copy your MongoDB connection URI.
+
+### 5. Configure Environment Variables
+Create a .env file in the root directory:
+```js
+DB_USER=smartDBUser
+DB_PASS=yourSecurePassword
+```
+
+In index.js:
+```js
+require("dotenv").config();
+
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.z1gnsog.mongodb.net/?appName=Cluster0`;
+```
+
+## ⚙️ Basic CRUD Operations
+### 6. GET Products with Projection, Sort, and Pagination
+Get conditional data: go to CRUD operation → Query Document → Specify Documents to return
+```js
+app.get("/products", async (req, res) => {
+  const projectFields = { title: 1, price_min: 1, price_max: 1, image: 1 };
+  const cursor = productsCollection
+    .find()
+    .sort({ price_min: -1 })
+    .skip(2)
+    .limit(3)
+    .project(projectFields);
+
+  const result = await cursor.toArray();
+  res.send(result);
+});
+```
+
+### 7. GET Products with Query Parameter
+
+Example request:
+```js
+GET http://localhost:3000/products?email=faria@gmail.com
+```
+```js
+app.get("/products", async (req, res) => {
+  const email = req.query.email;
+  const query = {};
+  if (email) query.email = email;
+
+  const result = await productsCollection.find(query).toArray();
+  res.send(result);
+});
+```
+## 💰 Bids Feature
+### 8. Database Collections
+```js
+const db = client.db("smart_db");
+const productsCollection = db.collection("products");
+const bidsCollection = db.collection("bids");
+```
+### 9. Fetch Bids (All or by Buyer)
+```js
+app.get("/bids", async (req, res) => {
+  const email = req.query.email;
+  const query = {};
+  if (email) query.buyer_email = email;
+
+  const result = await bidsCollection.find(query).toArray();
+  res.send(result);
+});
+```
+### 10. Insert Bid
+```js
+app.post("/bids", async (req, res) => {
+  const newBid = req.body;
+  const result = await bidsCollection.insertOne(newBid);
+  res.send(result);
+});
+```
+
+💡 Tip: Ensure that each bid includes a valid `product_id` referencing a document in the `products` collection.
+
+## 👥 Users Management with Firebase
+### 11. Firebase Setup
+
+#### 1. Create a new Firebase project.
+
+#### 2. Enable Google Sign-In in the Authentication settings.
+
+### 12. Save User Data to Database
+
+Client-side code:
 ```js
 signInWithGoogle()
- .then(result => {
-   //  console.log(result.user);
-   const newUser = {
-     name: result.user.displayName,
-     email: result.user.email,
-     image: result.user.photoURL
-   }
+  .then(result => {
+    const newUser = {
+      name: result.user.displayName,
+      email: result.user.email,
+      image: result.user.photoURL,
+    };
 
-   // create user in the database
-   fetch("https://smart-deals-api-server-gamma.vercel.app/users", {
-     method: "POST",
-     headers: {
-      "content-type" : "application/json"
-     },
-     body: JSON.stringify(newUser),
-   })
-     .then(res => res.json())
-     .then(data => {
-       console.log("user after save", data);
-     })
- })
- .catch(err => console.log(err))
+    fetch("http://localhost:3000/users", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(newUser),
+    })
+      .then(res => res.json())
+      .then(data => console.log("User saved:", data));
+  })
+  .catch(err => console.error(err));
 ```
+
+Server-side API:
 ```js
 const usersCollection = db.collection("users");
 
-
 app.post("/users", async (req, res) => {
   const newUser = req.body;
-
-  const email = req.body.email;
-  const query = {email : email};
+  const query = { email: newUser.email };
   const existingUser = await usersCollection.findOne(query);
 
-  if(existingUser){
-    res.send({message: "user already exist. Do not insert again."});
+  if (existingUser) {
+    res.send({ message: "User already exists. Do not insert again." });
   } else {
-    const result = await userCollection.insertOne(newUser);
+    const result = await usersCollection.insertOne(newUser);
     res.send(result);
   }
-})
+});
 ```
 
-20. button in index.css
+## 🛒 Products and Bidding Features
+### 13. Latest Products Endpoint
 ```js
-.btn-primary{
-  @apply bg-linear-to-r from-[#34434] to-[4434jk]
-}
-.btn-primary:hover{
-  @apply opacity-90
-}
+app.get("/latest-products", async (req, res) => {
+  const projectFields = { title: 1, image: 1, price_min: 1, price_max: 1 };
+  const result = await productsCollection
+    .find()
+    .sort({ created_at: -1 })
+    .limit(6)
+    .project(projectFields)
+    .toArray();
+
+  res.send(result);
+});
 ```
-21. latest products
+### 14. Bid Modal in React
 ```js
-// "/latest-products"
-// .sort({created_at : -1}).limit(6).project(projectFields)
-// LatestProducts.jsx
-// ProductDetails ---- "/products/:id"
-```
-22. bid Modal
-```js
-// 1.
 const bidModalRef = useRef(null);
-// 2.
-// replace <dialog id="my_modal_5"> by <dialog ref={bidModalRef}>
-// 3.
+
+// Open modal
 const handleBidModalOpen = () => {
   bidModalRef.current.showModal();
-}
-// 4.
-<button onClick={handleBidModalOpen}>My Button </button>
+};
+
+// JSX
+<dialog ref={bidModalRef}> ... </dialog>
+<button onClick={handleBidModalOpen}>Place a Bid</button>
 ```
-23. set defaultValue to input
+### 15. Prefill Input Fields
 ```js
-<input
-  type="text"
-  name="name"
-  defaultValue={user.displayName}
-  readOnly
-/>
-<input
-  type="email"
-  name="email"
-  defaultValue={user.email}
-  readOnly
-/>
+<input type="text" name="name" defaultValue={user.displayName} readOnly />
+<input type="email" name="email" defaultValue={user.email} readOnly />
 ```
-24. .env file in server side
+### 16. promt:
 ```js
-// 1.
-npm install dotenv
-// 2.
-require("dotenv").config();
-// 3.
-const uri =
-  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.z1gnsog.mongodb.net/?appName=Cluster0`;
+Think yourself as a senior software engineer. I already have a products collections. Now I need to add bids, where people can bid their own price for a product. I will also have to see what the bids for this product. Also I can see my bids to any of the products. I will be able to remove my bid, see status of the product I have bid. etc.
+
+how should I store this bid information. What are the different options I have.  What are the different criterias I should think to make the decision. 
 ```
+```js
+what do you think when should I use component folder structure for a react application or when should I use pages or feature wise folder structure
+```
+## 🧩 Concept Notes
+Primary Key vs Foreign Key (Simple Analogy)
+
+   - Primary Key → Like a student ID card — unique for each student in a school.
+
+   - Foreign Key → Like a library card linked to the student ID — it references the main record (student).
+
+### ✅ Summary
+
+   - **Server**: Node.js + Express + MongoDB
+
+   - **Client**: React + Firebase
+
+   - **Testing**: Thunder Client
+
+   - **Features**: Products, Bids, Users, CRUD operations
+
+   - **Security**: Environment variables for credentials
 
 
-# M57 - JWT & Firebase Admin SDK, Verification, Save User Data
 
-1. send accessToken from client side to server side
+# 🧠 M57 - JWT & Firebase Admin SDK Integration
+### Secure User Verification and Data Access Control
+
+This module demonstrates how to integrate Firebase Authentication, Firebase Admin SDK, and JWT (JSON Web Token) to authenticate users, verify access tokens, and secure API routes in a full-stack React + Node.js application.
+
+## 🚀 Step 1: Send Firebase Access Token from Client to Server
 ```js
-useEffect(()=> {
-  if(user?email){
-    fetch(`http:localhost:3000/bids?email=${user.email}`, {
-      headers : {
-        authorization : `Bearer ${user.accessToken}`
-      }
-    })
+useEffect(() => {
+  if (user?.email) {
+    fetch(`http://localhost:3000/bids?email=${user.email}`, {
+      headers: {
+        authorization: `Bearer ${user.accessToken}`,
+      },
+    });
   }
-},[user])
+}, [user]);
 ```
-2. get accessToken in server side
+
+## 🧩 Step 2: Receive and Validate Token on Server
+### Middleware to Verify Firebase Token
 ```js
-// middleware
 const verifyFirebaseToken = (req, res, next) => {
-  console.log("in the verify middleware", req.headers.authorization);
-  if(!req.headers.authorization){
-    // ask chatgpt : give me http status code
-    return res.status(401).send({message : "unauthorized access"});
+  console.log("In verify middleware:", req.headers.authorization);
+  
+  if (!req.headers.authorization) {
+    return res.status(401).send({ message: "Unauthorized access" });
   }
+
   const token = req.headers.authorization.split(" ")[1];
-  if(!token){
-    return res.status(401).send({message : "unauthorized access"});
+  try {
+    const userInfo = await admin.auth().verifyIdToken(token);
+    req.token_email = userInfo.email;
+    next();
+  } catch {
+    return res.status(401).send({ message: "Unauthorized access" });
   }
-  // then verify token
-
-  next();
-}
-
-// get by email
+ 
+};
+```
+### Protected Route Example
+```js
 app.get("/bids", verifyFirebaseToken, async (req, res) => {
   const email = req.query.email;
   const query = {};
-  if(email){
-    query.buyer_email = email;
-  }
-  const cursor = bidsCollection.find(query);
-  const result = await cursor.toArray();
-  res.send(result);
-})
-```
-3. in firebase
-- go to project settings > service accounts
-- npm i firebase-admin
-- copy the code and paste it in server side
-- click "Generate new private key"
-- cut the downloader json file and paste in the server side and keep it in .gitignore
-- go to documentation > ID Token verification
-- verify token
-```js
-const verifyFirebaseToken = async (req, res, next) => {
-  
-  // then verify token
-  try {
-    const userInfo = await admin.auth().verifyIdToken(token);
-    // console.log("after token validation", userInfo);
-    req.token_email = userInfo.email;
-    next();
-  } 
-  catch {
-    return res.status(401).send({message : "unauthorized access"});
-  }
-}
 
-// in get by email
-app.get("/bids", verifyFirebaseToken, async (req, res) => {
-  console.log(req.token_email);
   if(email){
     if(email !== req.token_email){
       return res.status(403).send({message : "forbiden access"});
     }
     query.buyer_email = email;
   }
-})
-```
-4. verify productDetails page in same way
-5. go to jwt.io
- - Libraries > click nodejs> view repo
- - npm install jsonwebtoken
- ```js
-  const jwt = require("jsonwebtoken")
 
- // jwt related apis
- app.post("/getToken", (req, res) => {
-  const token = jwt.sign({email : "abc"}, process.env.JWT_SECRET, {expiresIn: "1h"});
-  res.send({token : token});
- })
- ```
- - create JWT_SECRET in terminal --- 1. node , 2. require('crypto').randomBytes(64).toString('hex')
-6. post jwt token from client side
-```js
-useEffect(()=>{
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-      if(currentUser){
-        const loggedUser = {email : currentUser.email};
-
-        fetch("https://smart-deals-api-server-gamma.vercel.app/getToken", {
-          method: "POST",
-          headers: {
-            "content-Type" : "application/json"
-          },
-          body: JSON.stringify(loggedUser)
-        })
-          .then(res => res.json())
-          .then(data => {
-            console.log("after getting token", data);
-            localStorage.setItem("token", data.token);
-          })
-      } else {
-        localStorage.removeItem("token");
-      }
-    })
-    return () => unsubscribe();
-  },[])
+  const result = await bidsCollection.find(query).toArray();
+  res.send(result);
+});
 ```
+## 🔑 Step 3: Firebase Admin SDK Setup
+
+### 1. In Firebase Console, go to
+   - Project Settings → Service Accounts
+
+### 2. Run:
 ```js
-// jwt related apis
- app.post("/getToken", (req, res) => {
+npm i firebase-admin
+```
+
+### 3. Click **“Generate New Private Key”** and move the downloaded JSON file into your server project.
+Make sure it’s listed in `.gitignore`.
+
+### 4. Import and initialize Admin SDK in your server:
+```js
+const admin = require("firebase-admin");
+const serviceAccount = require("./firebase-service-account.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+```
+
+## 🧠 Step 4: JWT (JSON Web Token) Setup
+### Install and Configure JWT
+   - go to jwt.io
+   - Libraries → click nodejs → view repo
+```js
+npm install jsonwebtoken
+```
+
+### Create JWT_SECRET in terminal:
+```js
+node
+require('crypto').randomBytes(64).toString('hex')
+```
+
+### Set it in your .env file:
+```js
+JWT_SECRET=your_generated_secret_key
+```
+### JWT Token Generation API
+```js
+const jwt = require("jsonwebtoken");
+
+app.post("/getToken", (req, res) => {
   const loggedUser = req.body;
-  const token = jwt.sign(loggedUser, process.env.JWT_SECRET, {expiresIn: "1h"});
-  res.send({token : token});
- })
+  const token = jwt.sign(loggedUser, process.env.JWT_SECRET, { expiresIn: "1h" });
+  res.send({ token });
+});
 ```
-7. store token in client side and send to server side
+## 🧭 Step 5: Request Token from Client
 ```js
-.then(data => {
-  console.log("after getting token", data);
-  localStorage.setItem("token", data.token);
-})
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    setUser(currentUser);
+    setLoading(false);
 
-// send token from local storage
-useEffect(()=> {
-  if(user?email){
-    fetch(`http:localhost:3000/bids?email=${user.email}`, {
-      headers : {
-        authorization : `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-  }
-},[user])
+    if (currentUser) {
+      const loggedUser = { email: currentUser.email };
+
+      fetch("http://localhost:3000/getToken", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loggedUser),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Received token:", data);
+          localStorage.setItem("token", data.token);
+        });
+    } else {
+      localStorage.removeItem("token");
+    }
+  });
+
+  return () => unsubscribe();
+}, []);
 ```
-8. create verifyJWTToken middleware
+## 📦 Step 6: Send Stored JWT Token to Server
+```js
+useEffect(() => {
+  if (user?.email) {
+    fetch(`http://localhost:3000/bids?email=${user.email}`, {
+      headers: {
+        authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+  }
+}, [user]);
+```
+## 🔒 Step 7: Verify JWT Token on Server
+### Create verifyJWTToken Middleware
 ```js
 const verifyJWTToken = (req, res, next) => {
-  console.log("in the verify middleware", req.headers.authorization);
-  if(!req.headers.authorization){
-    return res.status(401).send({message : "unauthorized access"});
+  if (!req.headers.authorization) {
+    return res.status(401).send({ message: "Unauthorized access" });
   }
+
   const token = req.headers.authorization.split(" ")[1];
-  if(!token){
-    return res.status(401).send({message : "unauthorized access"});
-  }
-  // then verify jwt token
-
-  next();
-}
-
-// get by email
-app.get("/bids", verifyJWTToken, async (req, res) => {
-  
-})
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(401).send({ message: "Unauthorized access" });
+    req.token_email = decoded.email;
+    next();
+  });
+};
 ```
-9. go to JWT repo to verify JWT token
+### Apply Middleware in Protected Route
 ```js
-// verify jwt token
-jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-  if(err){
-    return res.status(401).send({message : "unauthorized access"});
-  }
-
-  console.log("after decoded", decoded);
-  req.token_email = decoded.email;
-  next();
-})
-
-// in get by email
 app.get("/bids", verifyJWTToken, async (req, res) => {
-  console.log(req.token_email);
-  if(email){
-    query.buyer_email = email;
+  const email = req.query.email;
+  
+  if (email && email !== req.token_email) {
+    return res.status(403).send({ message: "Forbidden access" });
   }
-  if(email !== req.token_email){
-    return res.status(403).send({message : "forbiden access"});
-  }
-})
-```
 
-10. ask chatgpt : 
+  const query = { buyer_email: email };
+  const result = await bidsCollection.find(query).toArray();
+  res.send(result);
+});
+```
+### 8. ask chatgpt : 
 ```js
 I have a react firebase authentication. In server side I am using express and mongodb(no mongose) 
 
@@ -596,160 +691,188 @@ I want to implement jwt token verification with http only cookie. Give me step b
 ```
 
 
-# M58 - Axios, useAuth, axiosInstance, useAxiosSecure, interceptor, Deploy
 
-1. fetch using axios
+
+# ⚙️ M58 - Axios, useAuth, useAxiosSecure, Interceptors & Deployment
+
+This module focuses on using Axios for API requests, implementing custom React hooks (useAuth, useAxios, useAxiosSecure), managing request/response interceptors for secure API communication, and deploying the backend to Vercel.
+
+### 🧩 Step 1: Fetch Data Using Axios
 ```js
 useEffect(() => {
-    axios(`https://smart-deals-api-server-gamma.vercel.app/products/bids/${productId}`)
-      .then(data => {
-        // console.log(data);
-        setBids(data.data);
-      })
-  }, [productId]);
+  axios(`http://localhost:3000/products/bids/${productId}`)
+    .then((data) => {
+      setBids(data.data);
+    });
+}, [productId]);
 ```
-2. post using axios
+Axios simplifies HTTP requests and automatically returns JSON responses.
+
+### 📤 Step 2: POST Data Using Axios
 ```js
-axios.post("https://smart-deals-api-server-gamma.vercel.app/products", newProduct)
+axios.post("http://localhost:3000/products", newProduct)
   .then((data) => {
-      if(data.data.insertedId){
-        alert("product has been created");
-      }
-  })
+    if (data.data.insertedId) {
+      alert("Product has been created successfully!");
+    }
+  });
 ```
-3. create custom hooks useAuth()
+### 🔐 Step 3: Create Custom useAuth() Hook
 ```js
 const useAuth = () => {
   const authInfo = useContext(AuthContext);
   return authInfo;
 };
 ```
-4. The axiosInstance
+
+### 🧠 Step 4: Create axiosInstance
+
+Centralize Axios configuration with a base URL.
 ```js
 const axiosInstance = axios.create({
-    baseURL : "https://smart-deals-api-server-gamma.vercel.app"
-})
+  baseURL: "http://localhost:3000",
+});
+
 const useAxios = () => {
-    return axiosInstance;
+  return axiosInstance;
 };
 ```
-5. useAxiosSecure
+
+Usage:
+```js
+const axiosPublic = useAxios();
+```
+### 🔒 Step 5: Create useAxiosSecure() with Request Interceptor
+
+Attach Firebase access tokens to every secured request.
 ```js
 const instance = axios.create({
-    baseURL : "https://smart-deals-api-server-gamma.vercel.app"
-})
+  baseURL: "http://localhost:3000",
+});
 
 const useAxiosSecure = () => {
-    const {user, loading} = useAuth();
-    if(loading) return;
-    instance.interceptors.request.use(config => {
-        config.headers.authorization = `Bearer ${user?.accessToken}`
-        // console.log(config)
-        return config;
-    })
-    return instance;
+  const { user, loading } = useAuth();
+
+  if (loading) return;
+
+  instance.interceptors.request.use((config) => {
+    config.headers.authorization = `Bearer ${user?.accessToken}`;
+    return config;
+  });
+
+  return instance;
 };
 ```
-6. verify firebase token
+
+Usage:
+```js
+const axiosSecure = useAxiosSecure();
+```
+### 🧾 Step 6: Verify Firebase Token on Server
 ```js
 const verifyFirebaseToken = async (req, res, next) => {
-  if(!req.headers.authorization){
-    res.status(401).send({message: "unauthorized access"});
+  if (!req.headers.authorization) {
+    return res.status(401).send({ message: "Unauthorized access" });
   }
+
   const token = req.headers.authorization.split(" ")[1];
   try {
     const decoded = await admin.auth().verifyIdToken(token);
     req.token_email = decoded.email;
     next();
   } catch (error) {
-    res.status(401).send({message: "unauthorized access"});
+    res.status(401).send({ message: "Unauthorized access" });
   }
-}
+};
 ```
-7. keep it inside useEffect for onmount
-```js
-seEffect(() => {
-    if (loading) return;
-    const requestInceptor = instance.interceptors.request.use((config) => {
-      config.headers.authorization = `Bearer ${user?.accessToken}`;
-      // console.log(config)
-      return config;
-    });
+### ⚙️ Step 7: Register Axios Interceptors on Mount
 
-    return () => {
-        instance.interceptors.request.eject(requestInceptor);
-    }
-  }, [user, loading]);
-```
-8. verify firebase token for my bids and my products
-```js
-app.get("/bids", verifyFirebaseToken, async (req, res) => {
-      const email = req.query.email;
-      const query = {};
-      if (email) {
-        if (email !== req.token_email) {
-          return res.status(403).send({ message: "forbiden access" });
-        }
-        query.buyer_email = email;
-      }
-
-      const cursor = bidsCollection.find(query).sort({ bid_price: -1 });
-      const result = await cursor.toArray();
-      res.send(result);
-    });
-```
+To avoid re-registering interceptors on every render, set them once using useEffect.
 ```js
 useEffect(() => {
-    if(loading) return;
-    axiosSecure.get(`/bids?email=${user?.email}`)
-      .then((data) => setBids(data.data));
+  if (loading) return;
 
+  const requestInterceptor = instance.interceptors.request.use((config) => {
+    config.headers.authorization = `Bearer ${user?.accessToken}`;
+    return config;
+  });
+
+  return () => {
+    instance.interceptors.request.eject(requestInterceptor);
+  };
+}, [user, loading]);
+```
+### 📦 Step 8: Verify Firebase Token for “My Bids” and “My Products”
+Server Side:
+```js
+app.get("/bids", verifyFirebaseToken, async (req, res) => {
+  const email = req.query.email;
+  const query = {};
+
+  if (email) {
+    if (email !== req.token_email) {
+      return res.status(403).send({ message: "Forbidden access" });
+    }
+    query.buyer_email = email;
+  }
+
+  const cursor = bidsCollection.find(query).sort({ bid_price: -1 });
+  const result = await cursor.toArray();
+  res.send(result);
+});
+```
+Client Side:
+```js
+useEffect(() => {
+  if (loading) return;
+
+  axiosSecure.get(`/bids?email=${user?.email}`)
+    .then((data) => setBids(data.data));
 }, [user, loading, axiosSecure]);
 ```
-9. response interceptors handle 401 and 403 to logout user for bad request
-```js
-// response interceptors
-    const responseInterceptor = instance.interceptors.response.use(res => {
-        return res;
-    }, err => {
-        console.log(err);
-        const status = err.status;
-        if(status === 401 || status === 403){
-            console.log("log out the user for bad request.");
-            signOutUser()
-             .then(()=> {
-                navigate("/auth/login");
-             })
-        }
-    })
+### 🚨 Step 9: Handle Unauthorized Requests with Response Interceptors
 
-    return () => {
-        instance.interceptors.request.eject(requestInterceptor);
-        instance.interceptors.response.eject(responseInterceptor);
-    }
-```
-10. server deploy
+Automatically log out users if a 401 or 403 error occurs.
 ```js
-// comment these two lines before deploy
+// Response Interceptors
+const responseInterceptor = instance.interceptors.response.use((res) => {
+        return res;
+    }, (err) => {
+        // console.log(err);
+        const status = err.status;
+        // const status = err?.response?.status;
+        if(status === 401 || status === 403){
+            console.log("Logging out user due to bad request...");
+            signOutUser().then(() => {
+               navigate("/auth/login");
+            });
+        }
+    }
+);
+
+return () => {
+  instance.interceptors.request.eject(requestInterceptor);
+  instance.interceptors.response.eject(responseInterceptor);
+};
+```
+### 🌐 Step 10: Deploy the Server to Vercel
+
+Before deploying, comment out MongoDB connection test lines:
+```js
 // await client.connect();
 // await client.db("admin").command({ ping: 1 });
+```
+Deployment Commands
+```js
 npm i -g vercel
-npm login
-
+vercel login
 vercel
 vercel --prod
 ```
-11
-```js
-```
-12
-```js
-```
-13
-```js
-```
-```js
-```
+
+   ✅ Your API will now be live and accessible through a Vercel-hosted URL.
+
+
 
 
 

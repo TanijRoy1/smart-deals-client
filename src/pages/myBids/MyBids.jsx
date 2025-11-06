@@ -41,7 +41,7 @@ const MyBids = () => {
         //   method: "DELETE",
         // })
         //   .then((res) => res.json())
-        axiosSecure(`/bids/${id}`).then((data) => {
+        axiosSecure.delete(`/bids/${id}`).then((data) => {
           if (data.data.deletedCount) {
             Swal.fire({
               title: "Deleted!",
