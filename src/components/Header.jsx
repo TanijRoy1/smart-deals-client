@@ -72,12 +72,12 @@ const Header = () => {
               {links}
             </ul>
           </div>
-          <a className="text-3xl font-black text-[#001931]">
+          <Link to={`/`} className="text-3xl font-black text-[#001931]">
             Smart
             <span className="bg-clip-text text-transparent bg-linear-to-r from-[#632EE3] to-[#9F62F2]">
               Deals
             </span>
-          </a>
+          </Link>
         </div>
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal px-1">{links}</ul>
@@ -102,7 +102,7 @@ const Header = () => {
               >
                 Login
               </Link>
-              <Link to={`/auth/register`} className="btn btn-primary">
+              <Link to={`/auth/register`} className="btn btn-primary hidden sm:flex">
                 Register
               </Link>
             </div>

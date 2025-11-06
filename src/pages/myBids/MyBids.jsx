@@ -4,6 +4,8 @@ import Swal from "sweetalert2";
 import AuthContext from "../../contexts/AuthContext";
 import Loading from "../../components/Loading";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const MyBids = () => {
   const [bids, setBids] = useState([]);
@@ -55,6 +57,16 @@ const MyBids = () => {
     });
   };
 
+  useEffect(() => {
+    AOS.init({
+      duration: 800,
+      offset: 100,
+      easing: "ease-in-out",
+      once: false,
+      mirror: true,
+    });
+  }, []);
+
   if (loading) {
     return <Loading></Loading>;
   }
@@ -85,7 +97,14 @@ const MyBids = () => {
             </thead>
             <tbody>
               {bids.map((bid, index) => (
-                <tr key={bid._id} className="hover:bg-gray-50">
+                <tr
+                  data-aos="fade-left"
+                  data-aos-delay={index * 200}
+                  data-aos-duration="500"
+                  data-aos-once="false"
+                  key={bid._id}
+                  className="hover:bg-gray-50"
+                >
                   <td>{index + 1}</td>
                   <td>
                     <div>
@@ -140,6 +159,10 @@ const MyBids = () => {
         <div className="md:hidden space-y-4">
           {bids.map((bid, index) => (
             <div
+              data-aos="fade-up"
+              data-aos-delay={index * 200}
+              data-aos-duration="500"
+              data-aos-once="false"
               key={bid._id}
               className="bg-white p-4 rounded-xl shadow-sm border border-gray-200"
             >

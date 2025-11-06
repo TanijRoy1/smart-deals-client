@@ -273,7 +273,7 @@ const ProductDetails = () => {
         {/* Header */}
         <h1 className="text-3xl font-bold text-accent text-center mb-6">
           Bids For This Product:{" "}
-          <span className="bg-gradient-to-r from-blue-500 to-red-500 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-blue-500 to-red-500 bg-clip-text text-transparent">
             {bids.length < 10 && 0}
             {bids.length}
           </span>
