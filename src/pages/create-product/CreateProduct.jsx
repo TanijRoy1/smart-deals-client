@@ -3,8 +3,13 @@ import { Link } from "react-router";
 import MyContainer from "../../components/MyContainer";
 import Swal from "sweetalert2";
 import { IoMdArrowRoundBack } from "react-icons/io";
+// import useAxios from "../../hooks/useAxios";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 const CreateProduct = () => {
+  // const axiosInstance = useAxios();
+  const axiosSecure = useAxiosSecure();
+
   const handleCreateProduct = (e) => {
     e.preventDefault();
     const newProduct = {
@@ -25,17 +30,23 @@ const CreateProduct = () => {
       created_at: new Date(),
     };
     // console.log(newProduct);
-    fetch("http://localhost:3000/products", {
-      method: "POST",
-      headers: {
-        "content-Type": "application/json",
-      },
-      body: JSON.stringify(newProduct),
-    })
-      .then((res) => res.json())
+
+    // fetch("https://smart-deals-api-server-gamma.vercel.app/products", {
+    //   method: "POST",
+    //   headers: {
+    //     "content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(newProduct),
+    // })
+    //   .then((res) => res.json())
+
+
+    // axios.post("https://smart-deals-api-server-gamma.vercel.app/products", newProduct)
+    // axiosInstance.post("/products", newProduct)
+    axiosSecure.post("/products", newProduct)
       .then((data) => {
         // console.log(data);
-        if(data.insertedId){
+        if(data.data.insertedId){
             Swal.fire({
                 position: "center",
                 icon: "success",
@@ -94,7 +105,7 @@ const CreateProduct = () => {
           <div className="flex gap-4">
             <fieldset className="fieldset w-full">
               <legend className="fieldset-legend">
-                Min Price You want to Sale ($)
+                Min Price ($)
               </legend>
               <input
                 type="text"
@@ -105,7 +116,7 @@ const CreateProduct = () => {
             </fieldset>
             <fieldset className="fieldset w-full">
               <legend className="fieldset-legend">
-                Max Price You want to Sale ($)
+                Max Price ($)
               </legend>
               <input
                 type="text"
@@ -118,7 +129,7 @@ const CreateProduct = () => {
           <div className="flex gap-4">
             <fieldset className="fieldset w-full">
               <legend className="fieldset-legend">Product Condition</legend>
-              <div className="flex gap-5">
+              <div className="flex sm:gap-5 gap-2 sm:flex-row flex-col">
                 <div className="flex gap-3">
                   <input
                     type="radio"

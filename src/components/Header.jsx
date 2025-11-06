@@ -84,13 +84,13 @@ const Header = () => {
         </div>
         <div className="navbar-end">
           {user ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center sm:gap-2 gap-1">
               <img
                 src={user?.photoURL}
                 className="w-11 h-11 rounded-full border-orange-500 border-2"
                 alt=""
               />
-              <button onClick={handleSignOutUser} className="btn btn-primary">
+              <button onClick={handleSignOutUser} className="btn btn-primary px-2.5">
                 SignOut
               </button>
             </div>

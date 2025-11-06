@@ -120,7 +120,7 @@ app.post("/users", async (req, res) => {
 
 Client-side:
 ```js
-fetch("http://localhost:3000/bids", {
+fetch("https://smart-deals-api-server-gamma.vercel.app/bids", {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify(newBid),
@@ -159,7 +159,7 @@ app.get("/users/:id", async (req, res) => {
 
 Client Example:
 ```js
-fetch("http://localhost:3000/users")
+fetch("https://smart-deals-api-server-gamma.vercel.app/users")
   .then(res => res.json())
   .then(data => console.log(data));
 ```
@@ -178,7 +178,7 @@ app.delete("/users/:id", async (req, res) => {
 Client-side:
 ```js
 const handleDeleteUser = (id) => {
-  fetch(`http://localhost:3000/users/${id}`, { method: "DELETE" })
+  fetch(`https://smart-deals-api-server-gamma.vercel.app/users/${id}`, { method: "DELETE" })
     .then(res => res.json())
     .then(data => {
       if (data.deletedCount) {
@@ -216,7 +216,7 @@ const handleUpdateUser = (e) => {
     email: e.target.email.value,
   };
 
-  fetch(`http://localhost:3000/users/${user._id}`, {
+  fetch(`https://smart-deals-api-server-gamma.vercel.app/users/${user._id}`, {
     method: "PATCH",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(updatedUser),
@@ -306,7 +306,7 @@ signInWithGoogle()
    }
 
    // create user in the database
-   fetch("http://localhost:3000/users", {
+   fetch("https://smart-deals-api-server-gamma.vercel.app/users", {
      method: "POST",
      headers: {
       "content-type" : "application/json"
@@ -497,7 +497,7 @@ useEffect(()=>{
       if(currentUser){
         const loggedUser = {email : currentUser.email};
 
-        fetch("http://localhost:3000/getToken", {
+        fetch("https://smart-deals-api-server-gamma.vercel.app/getToken", {
           method: "POST",
           headers: {
             "content-Type" : "application/json"
@@ -596,8 +596,160 @@ I want to implement jwt token verification with http only cookie. Give me step b
 ```
 
 
+# M58 - Axios, useAuth, axiosInstance, useAxiosSecure, interceptor, Deploy
 
+1. fetch using axios
+```js
+useEffect(() => {
+    axios(`https://smart-deals-api-server-gamma.vercel.app/products/bids/${productId}`)
+      .then(data => {
+        // console.log(data);
+        setBids(data.data);
+      })
+  }, [productId]);
+```
+2. post using axios
+```js
+axios.post("https://smart-deals-api-server-gamma.vercel.app/products", newProduct)
+  .then((data) => {
+      if(data.data.insertedId){
+        alert("product has been created");
+      }
+  })
+```
+3. create custom hooks useAuth()
+```js
+const useAuth = () => {
+  const authInfo = useContext(AuthContext);
+  return authInfo;
+};
+```
+4. The axiosInstance
+```js
+const axiosInstance = axios.create({
+    baseURL : "https://smart-deals-api-server-gamma.vercel.app"
+})
+const useAxios = () => {
+    return axiosInstance;
+};
+```
+5. useAxiosSecure
+```js
+const instance = axios.create({
+    baseURL : "https://smart-deals-api-server-gamma.vercel.app"
+})
 
+const useAxiosSecure = () => {
+    const {user, loading} = useAuth();
+    if(loading) return;
+    instance.interceptors.request.use(config => {
+        config.headers.authorization = `Bearer ${user?.accessToken}`
+        // console.log(config)
+        return config;
+    })
+    return instance;
+};
+```
+6. verify firebase token
+```js
+const verifyFirebaseToken = async (req, res, next) => {
+  if(!req.headers.authorization){
+    res.status(401).send({message: "unauthorized access"});
+  }
+  const token = req.headers.authorization.split(" ")[1];
+  try {
+    const decoded = await admin.auth().verifyIdToken(token);
+    req.token_email = decoded.email;
+    next();
+  } catch (error) {
+    res.status(401).send({message: "unauthorized access"});
+  }
+}
+```
+7. keep it inside useEffect for onmount
+```js
+seEffect(() => {
+    if (loading) return;
+    const requestInceptor = instance.interceptors.request.use((config) => {
+      config.headers.authorization = `Bearer ${user?.accessToken}`;
+      // console.log(config)
+      return config;
+    });
+
+    return () => {
+        instance.interceptors.request.eject(requestInceptor);
+    }
+  }, [user, loading]);
+```
+8. verify firebase token for my bids and my products
+```js
+app.get("/bids", verifyFirebaseToken, async (req, res) => {
+      const email = req.query.email;
+      const query = {};
+      if (email) {
+        if (email !== req.token_email) {
+          return res.status(403).send({ message: "forbiden access" });
+        }
+        query.buyer_email = email;
+      }
+
+      const cursor = bidsCollection.find(query).sort({ bid_price: -1 });
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+```
+```js
+useEffect(() => {
+    if(loading) return;
+    axiosSecure.get(`/bids?email=${user?.email}`)
+      .then((data) => setBids(data.data));
+
+}, [user, loading, axiosSecure]);
+```
+9. response interceptors handle 401 and 403 to logout user for bad request
+```js
+// response interceptors
+    const responseInterceptor = instance.interceptors.response.use(res => {
+        return res;
+    }, err => {
+        console.log(err);
+        const status = err.status;
+        if(status === 401 || status === 403){
+            console.log("log out the user for bad request.");
+            signOutUser()
+             .then(()=> {
+                navigate("/auth/login");
+             })
+        }
+    })
+
+    return () => {
+        instance.interceptors.request.eject(requestInterceptor);
+        instance.interceptors.response.eject(responseInterceptor);
+    }
+```
+10. server deploy
+```js
+// comment these two lines before deploy
+// await client.connect();
+// await client.db("admin").command({ ping: 1 });
+npm i -g vercel
+npm login
+
+vercel
+vercel --prod
+```
+11
+```js
+```
+12
+```js
+```
+13
+```js
+```
+```js
+```
 
 
 

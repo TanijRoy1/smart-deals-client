@@ -9,7 +9,7 @@ const LatestProducts = ({latestProductsPromise}) => {
         <MyContainer className={`py-10`}>
             <h1 className='text-center text-accent text-3xl font-bold'>Recent <span className='bg-linear-to-r from-blue-500 to-red-500 bg-clip-text text-transparent'>Products</span> <span className='text-xs text-accent-content'>{latestProducts.length} products found</span></h1>
 
-            <div className='grid grid-cols-3 gap-8 py-10'>
+            <div className='grid md:grid-cols-3 grid-cols-1 gap-8 py-10'>
                 {
                     latestProducts.map(product => <Product key={product._id} product={product}></Product>)
                 }

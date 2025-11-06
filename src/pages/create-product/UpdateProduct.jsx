@@ -28,7 +28,7 @@ const UpdateProduct = () => {
           created_at: new Date(),
         };
         // console.log(newProduct);
-        fetch(`http://localhost:3000/products/${_id}`, {
+        fetch(`https://smart-deals-api-server-gamma.vercel.app/products/${_id}`, {
           method: "PUT",
           headers: {
             "content-Type": "application/json",
@@ -97,7 +97,7 @@ const UpdateProduct = () => {
           <div className="flex gap-4">
             <fieldset className="fieldset w-full">
               <legend className="fieldset-legend">
-                Min Price You want to Sale ($)
+                Min Price ($)
               </legend>
               <input
                 type="text"
@@ -109,7 +109,7 @@ const UpdateProduct = () => {
             </fieldset>
             <fieldset className="fieldset w-full">
               <legend className="fieldset-legend">
-                Max Price You want to Sale ($)
+                Max Price ($)
               </legend>
               <input
                 type="text"
@@ -123,7 +123,7 @@ const UpdateProduct = () => {
           <div className="flex gap-4">
             <fieldset className="fieldset w-full">
               <legend className="fieldset-legend">Product Condition</legend>
-              <div className="flex gap-5">
+              <div className="flex flex-col sm:flex-row sm:gap-5 gap-2">
                 <div className="flex gap-3">
                   <input
                     type="radio"

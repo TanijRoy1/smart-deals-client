@@ -3,22 +3,26 @@ import MyContainer from "../../components/MyContainer";
 import Swal from "sweetalert2";
 import AuthContext from "../../contexts/AuthContext";
 import Loading from "../../components/Loading";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 const MyBids = () => {
   const [bids, setBids] = useState([]);
-  const {user, loading} = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+  const axiosSecure = useAxiosSecure();
   // console.log(user?.accessToken);
 
   useEffect(() => {
-    if(loading) return;
-    fetch(`http://localhost:3000/bids?email=${user?.email}`, {
-      headers : {
-        authorization : `Bearer ${user?.accessToken}`
-      }
-    })
-      .then((res) => res.json())
-      .then((data) => setBids(data));
-  }, [user, loading]);
+    if (loading) return;
+    // fetch(`https://smart-deals-api-server-gamma.vercel.app/bids?email=${user?.email}`, {
+    //   headers : {
+    //     authorization : `Bearer ${user?.accessToken}`
+    //   }
+    // })
+    //   .then((res) => res.json())
+    axiosSecure
+      .get(`/bids?email=${user?.email}`)
+      .then((data) => setBids(data.data));
+  }, [user, loading, axiosSecure]);
 
   const handleDeleteBid = (id) => {
     Swal.fire({
@@ -31,44 +35,45 @@ const MyBids = () => {
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`http://localhost:3000/bids/${id}`, {
-          method: "DELETE",
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.deletedCount) {
-              Swal.fire({
-                title: "Deleted!",
-                text: "Your bid has been deleted.",
-                icon: "success",
-              });
+        // fetch(`https://smart-deals-api-server-gamma.vercel.app/bids/${id}`, {
+        //   method: "DELETE",
+        // })
+        //   .then((res) => res.json())
+        axiosSecure(`/bids/${id}`).then((data) => {
+          if (data.data.deletedCount) {
+            Swal.fire({
+              title: "Deleted!",
+              text: "Your bid has been deleted.",
+              icon: "success",
+            });
 
-              const remainingBids = bids.filter((bid) => bid._id !== id);
-              setBids(remainingBids);
-            }
-          });
+            const remainingBids = bids.filter((bid) => bid._id !== id);
+            setBids(remainingBids);
+          }
+        });
       }
     });
   };
 
-  if(loading) {
-    return <Loading></Loading>
+  if (loading) {
+    return <Loading></Loading>;
   }
   return (
     <div className="bg-gray-100">
-      <MyContainer className={`py-10`}>
-        <h1 className="text-3xl font-bold text-accent text-center">
-          {" "}
+      <MyContainer className="py-10">
+        {/* Header */}
+        <h1 className="text-3xl font-bold text-accent text-center mb-6">
           My Bids:{" "}
           <span className="bg-linear-to-r from-blue-500 to-red-500 bg-clip-text text-transparent">
             {bids.length < 10 && 0}
             {bids.length}
           </span>
         </h1>
-        <div className="overflow-x-auto">
-          <table className="table">
-            {/* head */}
-            <thead>
+
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="table w-full">
+            <thead className="bg-gray-200 text-gray-700">
               <tr>
                 <th>SL NO</th>
                 <th>Product</th>
@@ -79,14 +84,15 @@ const MyBids = () => {
               </tr>
             </thead>
             <tbody>
-              {/* row 1 */}
               {bids.map((bid, index) => (
-                <tr key={bid._id}>
+                <tr key={bid._id} className="hover:bg-gray-50">
                   <td>{index + 1}</td>
                   <td>
                     <div>
-                      <p>iPhone 14 Pro</p>
-                      <p>{bid.product}</p>
+                      <p className="font-semibold">
+                        {bid.product_name || "iPhone 14 Pro"}
+                      </p>
+                      <p className="text-sm text-gray-500">{bid.product}</p>
                     </div>
                   </td>
                   <td>
@@ -95,7 +101,8 @@ const MyBids = () => {
                         <div className="mask mask-squircle rounded-full h-12 w-12">
                           <img
                             src={bid.buyer_image}
-                            alt="Avatar Tailwind CSS Component"
+                            alt="Seller Avatar"
+                            className="object-cover"
                           />
                         </div>
                       </div>
@@ -107,7 +114,9 @@ const MyBids = () => {
                       </div>
                     </div>
                   </td>
-                  <td>৳ {bid.bid_price}</td>
+                  <td className="font-semibold text-gray-800">
+                    ৳ {bid.bid_price}
+                  </td>
                   <td>
                     <span className="bg-orange-500 border border-orange-500 text-white rounded-2xl px-2 py-1 text-xs font-semibold">
                       {bid.status}
@@ -116,7 +125,7 @@ const MyBids = () => {
                   <td>
                     <button
                       onClick={() => handleDeleteBid(bid._id)}
-                      className="text-green-500 border border-green-500 cursor-pointer hover:shadow-xl rounded-2xl px-2 py-1 text-xs font-semibold mr-2"
+                      className="text-green-500 border border-green-500 hover:shadow-md transition-all cursor-pointer rounded-2xl px-2 py-1 text-xs font-semibold"
                     >
                       Remove Bid
                     </button>
@@ -125,6 +134,62 @@ const MyBids = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card Layout */}
+        <div className="md:hidden space-y-4">
+          {bids.map((bid, index) => (
+            <div
+              key={bid._id}
+              className="bg-white p-4 rounded-xl shadow-sm border border-gray-200"
+            >
+              {/* Header row */}
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-semibold text-gray-600">
+                  #{index + 1}
+                </span>
+                <span className="bg-orange-500 text-white text-xs font-semibold rounded-2xl px-2 py-0.5">
+                  {bid.status}
+                </span>
+              </div>
+
+              {/* Product info */}
+              <div className="mb-3">
+                <h3 className="text-lg font-bold">
+                  {bid.product_name || "iPhone 14 Pro"}
+                </h3>
+                <p className="text-sm text-gray-500">{bid.product}</p>
+              </div>
+
+              {/* Seller info */}
+              <div className="flex items-center gap-3 mb-3">
+                <img
+                  src={bid.buyer_image}
+                  alt="Seller Avatar"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <p className="font-semibold text-gray-700">
+                    {bid.buyer_name}
+                  </p>
+                  <p className="text-xs text-gray-500">{bid.buyer_email}</p>
+                </div>
+              </div>
+
+              {/* Bid info & actions */}
+              <div className="flex justify-between items-center">
+                <p className="text-base font-semibold text-gray-800">
+                  ৳ {bid.bid_price}
+                </p>
+                <button
+                  onClick={() => handleDeleteBid(bid._id)}
+                  className="text-green-500 border border-green-500 hover:shadow-md transition-all rounded-2xl px-2 py-1 text-xs font-semibold"
+                >
+                  Remove Bid
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </MyContainer>
     </div>

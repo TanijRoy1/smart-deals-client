@@ -4,7 +4,7 @@ import LatestProducts from './LatestProducts';
 import Loading from "../../components/Loading";
 
 
-const latestProductsPromise = fetch("http://localhost:3000/latest-products").then(res => res.json());
+const latestProductsPromise = fetch("https://smart-deals-api-server-gamma.vercel.app/latest-products").then(res => res.json());
 const Home = () => {
     return (
         <div className='bg-gray-100'>

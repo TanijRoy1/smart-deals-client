@@ -4,6 +4,7 @@ import MyContainer from "../../components/MyContainer";
 import Swal from "sweetalert2";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import AuthContext from "../../contexts/AuthContext";
+import axios from "axios";
 
 const ProductDetails = () => {
   const [bids, setBids] = useState([]);
@@ -50,7 +51,7 @@ const ProductDetails = () => {
       status: "pending",
     };
 
-    fetch("http://localhost:3000/bids", {
+    fetch("https://smart-deals-api-server-gamma.vercel.app/bids", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -78,15 +79,38 @@ const ProductDetails = () => {
   };
 
   useEffect(() => {
-    fetch(`http://localhost:3000/products/bids/${productId}`)
-      .then((res) => res.json())
-      .then((data) => setBids(data));
+    axios(
+      `https://smart-deals-api-server-gamma.vercel.app/products/bids/${productId}`
+    ).then((data) => {
+      // console.log(data);
+      setBids(data.data);
+    });
   }, [productId]);
+  // useEffect(() => {
+  //   fetch(`https://smart-deals-api-server-gamma.vercel.app/products/bids/${productId}`)
+  //     .then((res) => res.json())
+  //     .then((data) => setBids(data));
+  // }, [productId]);
 
   return (
     <div className="bg-gray-100">
-      <MyContainer className={`flex gap-8 py-10`}>
-        <div className="w-[40%]">
+      <MyContainer className={`flex flex-col lg:flex-row gap-8 py-10`}>
+        <div className="lg:w-[40%]">
+          <div className="flex justify-between mb-6 lg:hidden">
+            <Link
+              to={`/all-products`}
+              className="cursor-pointer flex items-center gap-2"
+            >
+              <IoMdArrowRoundBack />
+              Back To Products
+            </Link>
+            <Link
+              to={`/update-product/${productId}`}
+              className="border px-2 py-0.5 rounded-lg border-blue-600 text-blue-600 cursor-pointer"
+            >
+              Edit
+            </Link>
+          </div>
           <img src={image} alt={title} className="w-full h-80 object-cover" />
           <div className="bg-white p-4 mt-4 rounded-2xl shadow">
             <h1 className="py-4 text-2xl font-bold text-accent">
@@ -111,7 +135,7 @@ const ProductDetails = () => {
           </div>
         </div>
         <div className="flex-1">
-          <div className="flex justify-between">
+          <div className="lg:flex hidden justify-between">
             <Link
               to={`/all-products`}
               className="cursor-pointer flex items-center gap-2"
@@ -245,23 +269,22 @@ const ProductDetails = () => {
         </dialog>
       </MyContainer>
 
-      <MyContainer>
-        <h1 className="text-3xl font-bold text-accent">
-          {" "}
-          Bids For This Products:{" "}
-          <span className="bg-linear-to-r from-blue-500 to-red-500 bg-clip-text text-transparent">
+      <MyContainer className="py-10">
+        {/* Header */}
+        <h1 className="text-3xl font-bold text-accent text-center mb-6">
+          Bids For This Product:{" "}
+          <span className="bg-gradient-to-r from-blue-500 to-red-500 bg-clip-text text-transparent">
             {bids.length < 10 && 0}
             {bids.length}
           </span>
         </h1>
-        <div className="overflow-x-auto">
-          <table className="table">
-            {/* head */}
-            <thead>
+
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="table w-full">
+            <thead className="bg-gray-200 text-gray-700">
               <tr>
-                <th>
-                  <label>SL No</label>
-                </th>
+                <th>SL No</th>
                 <th>Product</th>
                 <th>Seller</th>
                 <th>Bid Price</th>
@@ -269,25 +292,23 @@ const ProductDetails = () => {
               </tr>
             </thead>
             <tbody>
-              {/* row 1 */}
               {bids.map((bid, index) => (
-                <tr key={bid._id}>
-                  <th>
-                    <label>{index + 1}</label>
-                  </th>
+                <tr key={bid._id} className="hover:bg-gray-50">
+                  <td>{index + 1}</td>
                   <td>
                     <div className="flex items-center gap-3">
                       <div className="avatar">
                         <div className="mask mask-squircle h-12 w-12">
                           <img
                             src={image}
-                            alt="Avatar Tailwind CSS Component"
+                            alt="Product"
+                            className="object-cover"
                           />
                         </div>
                       </div>
                       <div>
                         <div className="font-bold">{title}</div>
-                        <div className="text-sm opacity-50">
+                        <div className="text-sm opacity-60">
                           ৳ {price_min} - {price_max}
                         </div>
                       </div>
@@ -299,7 +320,8 @@ const ProductDetails = () => {
                         <div className="mask mask-squircle rounded-full h-12 w-12">
                           <img
                             src={bid.buyer_image}
-                            alt="Avatar Tailwind CSS Component"
+                            alt={bid.buyer_name}
+                            className="object-cover"
                           />
                         </div>
                       </div>
@@ -311,19 +333,77 @@ const ProductDetails = () => {
                       </div>
                     </div>
                   </td>
-                  <td>৳ {bid.bid_price}</td>
-                  <td>
-                    <span className="text-green-500 border border-green-500 rounded-2xl px-2 py-1 text-xs font-semibold mr-2">
+                  <td className="font-semibold">৳ {bid.bid_price}</td>
+                  <td className="flex gap-2 flex-wrap">
+                    <button className="text-green-500 border border-green-500 hover:bg-green-50 rounded-2xl px-2 py-1 text-xs font-semibold transition">
                       Accept Offer
-                    </span>
-                    <span className="text-orange-500 border border-orange-500 rounded-2xl px-2 py-1 text-xs font-semibold">
+                    </button>
+                    <button className="text-orange-500 border border-orange-500 hover:bg-orange-50 rounded-2xl px-2 py-1 text-xs font-semibold transition">
                       Reject Offer
-                    </span>
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card Layout */}
+        <div className="md:hidden space-y-4">
+          {bids.map((bid, index) => (
+            <div
+              key={bid._id}
+              className="bg-white border border-gray-200 rounded-xl shadow-sm p-4"
+            >
+              {/* Header row */}
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-semibold text-gray-600">
+                  #{index + 1}
+                </span>
+                <span className="text-xs text-gray-400">৳ {bid.bid_price}</span>
+              </div>
+
+              {/* Product info */}
+              <div className="flex gap-3 mb-3">
+                <img
+                  src={image}
+                  alt="Product"
+                  className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+                />
+                <div>
+                  <h3 className="font-bold text-gray-800">{title}</h3>
+                  <p className="text-sm text-gray-500">
+                    ৳ {price_min} - {price_max}
+                  </p>
+                </div>
+              </div>
+
+              {/* Buyer info */}
+              <div className="flex items-center gap-3 mb-3">
+                <img
+                  src={bid.buyer_image}
+                  alt={bid.buyer_name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <p className="font-semibold text-gray-700">
+                    {bid.buyer_name}
+                  </p>
+                  <p className="text-xs text-gray-500">{bid.buyer_email}</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-between items-center mt-2">
+                <button className="text-green-500 border border-green-500 hover:bg-green-50 rounded-2xl px-3 py-1 text-xs font-semibold transition">
+                  Accept
+                </button>
+                <button className="text-orange-500 border border-orange-500 hover:bg-orange-50 rounded-2xl px-3 py-1 text-xs font-semibold transition">
+                  Reject
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </MyContainer>
     </div>

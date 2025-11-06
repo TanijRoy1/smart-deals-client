@@ -25,13 +25,13 @@ const router = createBrowserRouter([
             {
                 path: "all-products",
                 Component: AllProducts,
-                loader: () => fetch("http://localhost:3000/products"),
+                loader: () => fetch("https://smart-deals-api-server-gamma.vercel.app/products"),
                 hydrateFallbackElement: <Loading></Loading>
             },
             {
                 path: "product-details/:id",
                 Component: ProductDetails,
-                loader: ({params}) => fetch(`http://localhost:3000/products/${params.id}`),
+                loader: ({params}) => fetch(`https://smart-deals-api-server-gamma.vercel.app/products/${params.id}`),
                 hydrateFallbackElement: <Loading></Loading>
             },
             {
@@ -49,7 +49,7 @@ const router = createBrowserRouter([
             {
                 path: "update-product/:id",
                 Component: UpdateProduct,
-                loader: ({params}) => fetch(`http://localhost:3000/products/${params.id}`),
+                loader: ({params}) => fetch(`https://smart-deals-api-server-gamma.vercel.app/products/${params.id}`),
                 hydrateFallbackElement: <Loading></Loading>
             }
         ]
